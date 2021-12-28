@@ -48,7 +48,12 @@ public class ListaLeilaoTelaTest {
 
         //primeiro verifica se o texto é igual ao que está entre parenteses
         //depois verifica se está sendo exibida
-        onView(withText("brigadeiro"))
+        onView(allOf(withText("brigadeiro"), withId(R.id.item_leilao_descricao)))
+                .check(matches(isDisplayed()));
+
+        String formatoEsperado = new FormatadorDeMoeda().formata(0.00);
+
+        onView(allOf(withText(formatoEsperado), withId(R.id.item_leilao_maior_lance)))
                 .check(matches(isDisplayed()));
     }
 
