@@ -73,4 +73,6 @@ public class ListaLeilaoAdapterTest {
         assertThat(quantidadeLeiloesDevolvida, is(2));
     }
 
+
+
 }

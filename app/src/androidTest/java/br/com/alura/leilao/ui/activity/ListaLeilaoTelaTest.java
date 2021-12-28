@@ -21,27 +21,28 @@ import br.com.alura.leilao.model.Leilao;
 
 public class ListaLeilaoTelaTest {
 
+    public static final String LEILAO_NAO_FOI_SALVO = "Leilão não foi salvo ";
+    public static final String BANCO_DE_DADOS_NAO_FOI_LIMPO = "Banco de dados não foi limpo";
     @Rule
     public ActivityTestRule<LancesLeilaoActivity> activity = new ActivityTestRule<>(LancesLeilaoActivity.class, true, false);
+    public final TesteWebClient webClient = new TesteWebClient();
+
+    //before diz que vai sempre chamar esse metodo antes dos testes
+    //vai limpar a base de dados
+    @Before
+    public void setup() {
+        boolean bancoDeDadosNaoFoiLimpo = !webClient.limpaBancoDeDados();
+        if (bancoDeDadosNaoFoiLimpo) {
+            Assert.fail(BANCO_DE_DADOS_NAO_FOI_LIMPO);
+        }
+    }
+
 
     //metodo do espresso que busca a view que queremos verificar
     @Test
     public void deve_AparecerUmLeilao_QuandoCarregaUmLeilaoNaAPI() throws IOException {
-         //preparando o cenario
 
-        TesteWebClient webClient = new TesteWebClient();
-
-        boolean bancoDeDadosNaoFoiLimpo = !webClient.limpaBancoDeDados();
-        if(bancoDeDadosNaoFoiLimpo){
-            Assert.fail("Banco de dados não foi " +
-                    "limpo");
-        }
-
-
-        Leilao brigadeiroSalvo = webClient.salva(new Leilao("brigadeiro"));
-        if(brigadeiroSalvo == null) {
-            Assert.fail("Leilão não foi salvo");
-        }
+        tentaSalvarLeilaoNaAPI(new Leilao("brigadeiro"));
 
         activity.launchActivity(new Intent());
 
@@ -53,4 +54,26 @@ public class ListaLeilaoTelaTest {
 
 
 
-}
+    @Test
+    public void deve_AparecerDoisLeiloes_QuandoCarregaDoisLeiloesDaAPI() throws IOException {
+
+        tentaSalvarLeilaoNaAPI(new Leilao("sonho"), new Leilao("brigadeiro"));
+
+        activity.launchActivity(new Intent());
+        onView(withText("brigadeiro"))
+                .check(matches(isDisplayed()));
+        onView(withText("sonho"))
+                .check(matches(isDisplayed()));
+    }
+
+
+
+    private void tentaSalvarLeilaoNaAPI(Leilao... leiloes) throws IOException {
+       for(Leilao leilao : leiloes){
+           Leilao leilaoSalvo = webClient.salva(leilao);
+           if (leilaoSalvo == null) {
+               Assert.fail(LEILAO_NAO_FOI_SALVO + leilao.getDescricao());
+           }
+       }
+
+    }
